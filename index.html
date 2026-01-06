@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tomato</title>
+  <style>
+    /* RESET */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { background: #fff; color: #333; }
+    a { text-decoration: none; color: inherit; cursor: pointer; }
+
+    /* NAVBAR */
+    nav { background: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+    .logo { font-size: 1.8rem; font-weight: bold; color: #fc8019; }
+    .nav-links { display: flex; gap: 1.5rem; font-weight: 500; }
+    .nav-links a:hover { color: #fc8019; }
+
+    /* HERO */
+    .hero { background: linear-gradient(to right, #fc8019, #f95e00); color: white; text-align: center; padding: 4rem 2rem; }
+    .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+    .search-bar { margin-top: 2rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    .search-bar input, .search-bar button { padding: 0.8rem 1rem; border: none; border-radius: 5px; font-size: 1rem; }
+    .search-bar input { width: 250px; }
+    .search-bar button { background: #333; color: white; cursor: pointer; }
+    .search-bar button:hover { background: #555; }
+
+    /* CATEGORIES */
+    .categories { margin: 2rem; overflow-x: auto; white-space: nowrap; padding-bottom: 1rem; }
+    .category { display: inline-block; background: #f2f2f2; padding: 1rem; margin-right: 1rem; border-radius: 10px; font-weight: 500; cursor: pointer; transition: background 0.3s; }
+    .category:hover { background: #fc8019; color: white; }
+
+    /* RESTAURANTS */
+    .restaurants { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; padding: 2rem; }
+    .card { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.3s; }
+    .card:hover { transform: scale(1.02); }
+    .card img { width: 100%; height: 150px; object-fit: cover; }
+    .card-content { padding: 1rem; }
+    .card-content h3 { margin-bottom: 0.5rem; }
+    .card-content p { font-size: 0.9rem; color: #666; }
+    .card-content button { margin-top: 0.8rem; padding: 0.6rem 1rem; background: #fc8019; color: white; border: none; border-radius: 5px; cursor: pointer; }
+
+    /* CART SIDEBAR */
+    .cart { position: fixed; top: 0; right: 0; width: 300px; height: 100vh; background: #fff; box-shadow: -2px 0 10px rgba(0,0,0,0.1); padding: 1rem; overflow-y: auto; display: none; flex-direction: column; z-index: 2000; }
+    .cart h2 { margin-bottom: 1rem; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .cart-item button { background: red; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 50%; font-size: 0.8rem; cursor: pointer; }
+    .cart-total { margin-top: 2rem; font-weight: bold; font-size: 1.2rem; }
+    .close-cart-btn { background: #fc8019; color: white; border: none; padding: 0.5rem 1rem; margin-bottom: 1rem; border-radius: 5px; cursor: pointer; align-self: flex-end; }
+    .show-cart { display: flex; }
+
+    /* MODALS */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 3000; }
+    .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; animation: pop 0.3s ease; }
+    @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .modal-content input, .modal-content button { width: 100%; margin-top: 1rem; padding: 0.8rem; border: 1px solid #ccc; border-radius: 5px; }
+    .modal-content button { background: #fc8019; color: white; border: none; }
+    .modal-content button:hover { background: #f95e00; }
+
+    /* PAYMENT MODAL */
+    .payment-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 3000; }
+    .payment-content { background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
+    .payment-content button { margin: 0.5rem 0; padding: 1rem; font-size: 1rem; width: 100%; border-radius: 5px; border: none; cursor: pointer; }
+    .payment-content button:hover { background: #f95e00; }
+    .payment-content .selected { background: #fc8019; }
+
+    /* ORDER SUCCESS POPUP */
+    .order-success { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 3000; }
+    .order-success-content { background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
+    .order-success-content h3 { font-size: 1.5rem; }
+    .order-success-content button { background: #fc8019; color: white; border: none; padding: 0.5rem 1rem; margin-top: 1rem; border-radius: 5px; cursor: pointer; }
+
+    /* FOOTER */
+    footer { background: #f2f2f2; text-align: center; padding: 2rem; margin-top: 2rem; font-size: 0.9rem; color: #777; }
+
+    @media (max-width: 600px) { .search-bar input { width: 100%; } }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">Tomato</div>
+  <div class="nav-links">
+    <a onclick="openModal('offersModal')">Offers</a>
+    <a onclick="openModal('helpModal')">Help</a>
+    <a onclick="openModal('signInModal')">Sign In</a>
+    <a onclick="toggleCart()">Cart 🛒</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <style>
+  h1 {
+    animation: bounce 1s ease infinite;
+    font-size: 2.5em;
+    color:black;
+    text-align: center;
+    margin-top: 50px;
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+</style>
+<h1>Hungry? Order Food Now!</h1>
+  </section>
+
+<!-- CATEGORIES -->
+<div class="categories">
+  <div class="category" onclick="filterCategory('Pizza')">Pizza</div>
+  <div class="category" onclick="filterCategory('Burgers')">Burgers</div>
+  <div class="category" onclick="filterCategory('Desserts')">Desserts</div>
+  <div class="category" onclick="filterCategory('Indian')">Indian</div>
+  <div class="category" onclick="filterCategory('Chinese')">Chinese</div>
+  <div class="category" onclick="filterCategory('Healthy')">Healthy</div>
+</div>
+
+<!-- RESTAURANTS -->
+<section class="restaurants" id="restaurant-list">
+  <!-- Dishes will be dynamically loaded here -->
+</section>
+
+<!-- CART SIDEBAR -->
+<div class="cart" id="cart">
+  <button class="close-cart-btn" onclick="toggleCart()">Close</button>
+  <h2>Your Cart</h2>
+  <div id="cart-items"></div>
+  <div class="cart-total" id="cart-total">Total: ₹0</div>
+  <button onclick="openPaymentModal()">Proceed to Payment</button>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="payment-modal" id="payment-modal">
+  <div class="payment-content">
+    <h2>Choose Payment Method</h2>
+    <button onclick="selectPaymentMethod(this)">UPI</button>
+    <button onclick="selectPaymentMethod(this)">Credit Card</button>
+    <button onclick="selectPaymentMethod(this)">Cash on Delivery</button>
+    <button onclick="closeModal('payment-modal')">Close</button>
+  </div>
+</div>
+
+<!-- ORDER SUCCESS POPUP -->
+<div class="order-success" id="order-success">
+  <div class="order-success-content">
+    <h3>Order Successfully Placed!</h3>
+    <p>Your order will be delivered shortly.</p>
+    <button onclick="closeModal('order-success')">Okay</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 Swiggy Clone. Built for educational purpose.</p>
+</footer>
+
+<!-- MODALS -->
+<div class="modal" id="offersModal">
+  <div class="modal-content">
+    <h2>Available Offers</h2>
+    <p>50% OFF on your first order!</p>
+    <p>20% cashback with XYZ cards</p>
+    <button onclick="closeModal('offersModal')">Close</button>
+  </div>
+</div>
+
+<div class="modal" id="helpModal">
+  <div class="modal-content">
+    <h2>Help Center</h2>
+    <p>Need assistance? Call 1800-123-4567</p>
+    <button onclick="closeModal('helpModal')">Close</button>
+  </div>
+</div>
+
+<div class="modal" id="signInModal">
+  <div class="modal-content">
+    <h2>Sign In</h2>
+    <input type="email" id="email" placeholder="Enter Email">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button onclick="validateSignIn()">Sign In</button>
+    <button onclick="closeModal('signInModal')" style="background:red;margin-top:10px">Cancel</button>
+  </div>
+</div>
+
+<script>
+// DISHES
+const dishes = {
+  Pizza: [
+    { name: "Margherita Pizza", price: 200, img: "https://tse3.mm.bing.net/th/id/OIP.RshZ9O7tlxkAWPuF7jKJxwHaE9?w=1280&h=857&rs=1&pid=ImgDetMain&o=7&rm=3" },
+    { name: "Pepperoni Pizza", price: 250, img: "https://www.thedailymeal.com/img/gallery/the-secret-to-using-fresh-mozzarella-when-making-pizza/l-intro-1671172830.jpg" }
+  ],
+  Burgers: [
+    { name: "Cheese Burger", price: 150, img: "https://th.bing.com/th/id/OIP.1je5uh9jQG4mAhBJXKCmhQHaE7?w=292&h=194&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" },
+    { name: "Veg Burger", price: 100, img: "https://th.bing.com/th/id/OIP.kvShd49_POKaK0rHgHxBsAHaHa?w=150&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" }
+  ],
+  Desserts: [
+    { name: "Chocolate Cake", price: 180, img: "https://th.bing.com/th/id/OSK.b0c34a2133ca31b6f3c5fec601ff8f2e?w=200&h=126&c=7&rs=1&qlt=80&o=6&cdv=1&dpr=1.3&pid=16.1" },
+    { name: "Ice Cream", price: 120, img: "https://th.bing.com/th/id/OIP.fLP_yLSkDiXJKolfH-Vf-gHaHa?w=192&h=192&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" }
+  ],
+  Indian: [
+    { name: "Butter Chicken", price: 300, img: "https://th.bing.com/th/id/OIP.ok7TYDLudEp_vKBY8xpx0gHaLH?w=208&h=305&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" },
+    { name: "Biryani", price: 250, img: "https://th.bing.com/th/id/OIP.wBu0Xsb774mtzvjhq1C3DgHaE8?w=282&h=188&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" }
+  ],
+  Chinese: [
+    { name: "Sweet and Sour Chicken", price: 220, img: "https://th.bing.com/th/id/OIP.Mj5AxHB7bt4cbh7594-HfAHaHa?w=208&h=208&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" },
+    { name: "Noodles", price: 150, img: "https://th.bing.com/th/id/OIP._H6Avz4H0507o8PXQzY7EQHaLH?w=204&h=306&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" }
+  ],
+  Healthy: [
+    { name: "Grilled Chicken Salad", price: 200, img: "https://th.bing.com/th/id/OIP.va6aQpwNuQKBRp56i5y_2AHaLH?w=208&h=305&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" },
+    { name: "Veg Salad", price: 120, img: "https://th.bing.com/th/id/OIP.1XVCrv91SKTwnjyen28KfgHaHa?w=208&h=208&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" }
+  ]
+};
+
+// Load all dishes
+function loadDishes() {
+  const restaurantList = document.getElementById("restaurant-list");
+  restaurantList.innerHTML = '';
+  for (const category in dishes) {
+    dishes[category].forEach(dish => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <img src="${dish.img}" alt="${dish.name}">
+        <div class="card-content">
+          <h3>${dish.name}</h3>
+          <p>₹${dish.price}</p>
+          <button onclick="addToCart('${dish.name}', ${dish.price})">Add to Cart</button>
+        </div>
+      `;
+      restaurantList.appendChild(card);
+    });
+  }
+}
+
+// Filter dishes by category
+function filterCategory(category) {
+  const restaurantList = document.getElementById("restaurant-list");
+  restaurantList.innerHTML = '';
+  dishes[category].forEach(dish => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <img src="${dish.img}" alt="${dish.name}">
+      <div class="card-content">
+        <h3>${dish.name}</h3>
+        <p>₹${dish.price}</p>
+        <button onclick="addToCart('${dish.name}', ${dish.price})">Add to Cart</button>
+      </div>
+    `;
+    restaurantList.appendChild(card);
+  });
+}
+
+// CART FUNCTIONALITY
+let cartItems = [];
+let total = 0;
+
+function addToCart(item, price) {
+  cartItems.push({ item, price });
+  total += price;
+  updateCart();
+  toggleCart(true);
+}
+
+function removeItem(index) {
+  total -= cartItems[index].price;
+  cartItems.splice(index, 1);
+  updateCart();
+}
+
+function updateCart() {
+  const cartDiv = document.getElementById('cart-items');
+  cartDiv.innerHTML = '';
+  cartItems.forEach((cartItem, index) => {
+    const div = document.createElement('div');
+    div.classList.add('cart-item');
+    div.innerHTML = `
+      <span>${cartItem.item} - ₹${cartItem.price}</span>
+      <button onclick="removeItem(${index})">Remove</button>
+    `;
+    cartDiv.appendChild(div);
+  });
+  document.getElementById('cart-total').textContent = `Total: ₹${total}`;
+}
+
+// TOGGLE CART SIDEBAR
+function toggleCart(show = false) {
+  const cart = document.getElementById('cart');
+  if (show) {
+    cart.classList.add('show-cart');
+  } else {
+    cart.classList.remove('show-cart');
+  }
+}
+
+// MODAL HANDLERS
+function openModal(id) {
+  document.getElementById(id).style.display = "flex";
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = "none";
+}
+
+// PAYMENT MODAL
+function openPaymentModal() {
+  document.getElementById('payment-modal').style.display = "flex";
+}
+
+function selectPaymentMethod(button) {
+  button.classList.add('selected');
+  closeModal('payment-modal');
+  setTimeout(() => {
+    openModal('order-success');
+  }, 300);
+}
+
+// CLOSE ORDER SUCCESS
+function closeOrderSuccess() {
+  closeModal('order-success');
+}
+
+loadDishes();
+</script>
+</body>
+</html>
